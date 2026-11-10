@@ -11,17 +11,16 @@ public class InvoicePrinter
                 + c.Mileage + " km  " + (c.Available ? "available" : "on rent"));
     }
 
-    public void PrintReceipt(Rental r, double rent, double fuel, double late, double damage,
-        double insurance)
+    public void PrintReceipt(Rental r, ReturnCharges charges)
     {
         Console.WriteLine("  ---- Receipt " + r.Number + ": " + r.Customer.Name
             + ", " + r.Car.Model + " (" + r.Car.Plate + ")");
         Console.WriteLine("  Days: " + r.Days + ", km: " + (r.EndKm - r.StartKm)
             + " (included " + r.Days * 250 + ")");
-        Console.WriteLine("  Rent: " + rent.ToString("F2") + "  Fuel: " + fuel.ToString("F2")
-            + "  Late: " + late.ToString("F2"));
-        Console.WriteLine("  Damage: " + damage.ToString("F2") + "  Insurance: "
-            + insurance.ToString("F2") + " (" + InsuranceName(r.Insurance) + ")");
+        Console.WriteLine("  Rent: " + charges.Rent.ToString("F2") + "  Fuel: "
+            + charges.Fuel.ToString("F2") + "  Late: " + charges.Late.ToString("F2"));
+        Console.WriteLine("  Damage: " + charges.Damage.ToString("F2") + "  Insurance: "
+            + charges.Insurance.ToString("F2") + " (" + InsuranceName(r.Insurance) + ")");
         if (Settings.PrintVat)
             Console.WriteLine("  incl. VAT: " + (r.Total / 6).ToString("F2"));
         Console.WriteLine("  TOTAL: " + r.Total.ToString("F2") + " " + Settings.Currency);

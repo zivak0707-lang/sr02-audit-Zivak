@@ -179,7 +179,7 @@ public class RentService
         CompleteRental(r, returnKm, fuelPercent, damaged);
         log.Write("CLOSE " + r.Number + " total=" + total);
         if (printReceipt)
-            printer.PrintReceipt(r, cost, fuel, late, dmg, ins);
+            printer.PrintReceipt(r, new ReturnCharges(cost, fuel, late, dmg, ins));
         return total;
     }
 
