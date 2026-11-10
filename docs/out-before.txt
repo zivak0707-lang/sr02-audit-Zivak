@@ -1,0 +1,48 @@
+=== CarRental branch console - demo day ===
+Fleet:
+  AA1024KB  Skoda Fabia     ECONOMY  41250 km  on rent
+  AA2048KC  Toyota Corolla  COMPACT  63800 km  on rent
+  AA3072KE  Kia Sportage    SUV      28400 km  on rent
+  AA4096KH  BMW 520d        PREMIUM  15100 km  available
+  AA5120KI  Renault Clio    ECONOMY  87020 km  available
+-- Quotes --
+Fabia 3d 900km: 133,50
+SUV 7d 1400km: 476,00
+SUV 8d 1400km: 489,60
+BMW 10d 3100km: 990,00
+  ! Customer 3 may not drive PREMIUM
+BMW for customer 3: -1
+Fabia 0 days: -1
+-- Reservations --
+Reserved and cancelled R-1004 AA5120KI Ivan Petrenko [Cancelled]: True
+  ! Customer 4 may not drive ECONOMY
+Customer 4: refused
+Picked up R-1005 AA5120KI Ivan Petrenko [Active], cancel: False
+Reserved R-1006 AA4096KH Olena Kovalenko [Reserved], deposit 500
+Error: Rental R-1006 is Reserved, only active rentals can be closed
+Extend R-1003 by 2 days, new estimate: 409,50
+Extend R-1006: 0 (Only active rentals can be extended)
+-- Returns --
+  ---- Receipt R-1001: Ivan Petrenko, Skoda Fabia (AA1024KB)
+  Days: 3, km: 820 (included 750)
+  Rent: 113,50  Fuel: 43,35  Late: 0,00
+  Damage: 0,00  Insurance: 27,00 (basic cover, excess 300)
+  TOTAL: 183,85 EUR
+  ---- Receipt R-1002: Olena Kovalenko, Toyota Corolla (AA2048KC)
+  Days: 8, km: 2300 (included 2000)
+  Rent: 326,43  Fuel: 41,25  Late: 41,00
+  Damage: 300,00  Insurance: 72,00 (basic cover, excess 300)
+  TOTAL: 780,68 EUR
+R-1002 late hours: 5, loyalty discount: 0,1
+R-1005 same-day return, total 51,00
+R-2001: -1 (Rental R-2001 not found)
+Olena Kovalenko: 1328 points, level GOLD
+-- Day summary --
+  R-1001 AA1024KB Ivan Petrenko [Closed]  183,85
+  R-1002 AA2048KC Olena Kovalenko [Closed]  780,68
+  R-1003 AA3072KE Taras Melnyk [Active]  0,00
+  R-1004 AA5120KI Ivan Petrenko [Cancelled]  0,00
+  R-1005 AA5120KI Ivan Petrenko [Closed]  51,00
+  R-1006 AA4096KH Olena Kovalenko [Reserved]  0,00
+Open: 2, closed: 3, cancelled: 1
+Revenue: 1015,53 EUR

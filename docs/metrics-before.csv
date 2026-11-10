@@ -1,0 +1,28 @@
+﻿File;Class;Method;Line;LOC;CC;Nesting;Params;FanOut
+RentService.cs;RentService;Close;128;64;21;5;6;8
+RentService.cs;RentService;Quote;89;28;15;2;4;8
+RentService.cs;RentService;Reserve;20;28;13;2;5;8
+RentService.cs;RentService;Extend;211;27;11;2;3;8
+RentService.cs;RentService;GetLoyaltyDiscount;272;7;5;2;1;8
+InvoicePrinter.cs;InvoicePrinter;PrintSummary;42;14;4;3;1;5
+Customer.cs;Customer;AddPoints;24;7;4;2;1;0
+RentService.cs;RentService;CalcOldTariff;284;7;4;2;2;8
+RentService.cs;RentService;FindRental;248;6;4;3;1;8
+InvoicePrinter.cs;InvoicePrinter;insuranceName;30;5;4;2;1;5
+Program.cs;Program;ShowReservations;34;18;3;2;1;4
+RentService.cs;RentService;Pickup;57;13;3;2;3;8
+RentService.cs;RentService;Cancel;74;8;3;2;1;8
+InvoicePrinter.cs;InvoicePrinter;PrintFleet;6;4;3;2;1;5
+RentService.cs;RentService;GetInsuranceRate;261;4;3;2;1;8
+RentalRepository.cs;RentalRepository;FindCar;47;4;3;3;1;4
+RentalRepository.cs;RentalRepository;find_customer;55;4;3;3;1;4
+InvoicePrinter.cs;InvoicePrinter;PrintReceipt;14;11;2;2;6;5
+AuditLog.cs;AuditLog;Write;8;4;2;2;1;1
+Car.cs;Car;IsBigCar;24;1;2;1;0;0
+Program.cs;Program;Main;6;24;1;1;1;4
+RentalRepository.cs;RentalRepository;RentalRepository (ctor);11;15;1;1;0;4
+RentalRepository.cs;RentalRepository;AddDemo;30;12;1;1;6;4
+Car.cs;Car;Car (ctor);14;5;1;1;5;0
+Customer.cs;Customer;Customer (ctor);14;5;1;1;5;0
+RentService.cs;RentService;RentService (ctor);14;1;1;1;0;8
+Rental.cs;Rental;Describe;22;1;1;1;0;3
