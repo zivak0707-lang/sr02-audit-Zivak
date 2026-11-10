@@ -16,6 +16,12 @@ public class RentService
         repo = new RentalRepository();
     }
 
+    // Шов для тестів: поточний момент можна підмінити в нащадку.
+    protected virtual DateTime Now()
+    {
+        return DateTime.Now;
+    }
+
     // Нове бронювання. null - якщо не можна (див. lastError)
     public Rental Reserve(int customerId, string plate, int startInDays, int days,
         string insurance)
@@ -44,7 +50,7 @@ public class RentService
         r.Customer = cust;
         r.Car = car;
         r.Days = days;
-        r.StartDate = DateTime.Today.AddDays(startInDays);
+        r.StartDate = Now().Date.AddDays(startInDays);
         r.PlannedReturn = r.StartDate.AddDays(days);
         r.Insurance = insurance == null ? "NONE" : insurance.ToUpper();
         r.Deposit = car.IsBigCar() ? 500 : 300;
@@ -64,8 +70,8 @@ public class RentService
                 + ", cannot pick up");
         r.StartKm = km;
         r.StartFuel = fuelPercent;
-        r.StartDate = DateTime.Today;
-        r.PlannedReturn = DateTime.Today.AddDays(r.Days);
+        r.StartDate = Now().Date;
+        r.PlannedReturn = Now().Date.AddDays(r.Days);
         r.Status = RentalStatus.Active;
         log.Write("PICKUP " + r.Number + " km=" + km);
         return true;
@@ -139,7 +145,7 @@ public class RentService
                 + ", only active rentals can be closed");
         Car car = r.Car;
         Customer c = r.Customer;
-        DateTime now = DateTime.Now;
+        DateTime now = Now();
         int days = (now.Date - r.StartDate.Date).Days;
         if (days < 1)
             days = 1; // повернули в той же день = 1 доба
