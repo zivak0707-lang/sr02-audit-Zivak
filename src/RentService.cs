@@ -49,20 +49,8 @@ public class RentService
     public Rental Reserve(int customerId, string plate, int startInDays, int days,
         string insurance)
     {
-        Customer cust = repo.FindCustomer(customerId);
-        Car car = repo.FindCar(plate);
-        string err = null;
-        if (cust == null || car == null)
-            err = "Customer " + customerId + " or car " + plate + " not found";
-        else if (cust.DriverAge < MinDriverAge || cust.LicenseYears < MinLicenseYears
-            || (cust.DriverAge < PremiumMinDriverAge && car.CarClass == "PREMIUM"))
-            err = "Customer " + customerId + " may not drive " + car.CarClass;
-        if (err != null)
-        {
-            lastError = err;
-            Console.WriteLine("  ! " + err);
+        if (DriverRejected(customerId, plate, out Customer cust, out Car car))
             return null;
-        }
         if (days <= 0 || days > MaxRentalDays || !car.Available)
         {
             lastError = "Car " + plate + " is not available for " + days + " days";
@@ -81,6 +69,25 @@ public class RentService
         repo.Rentals.Add(r);
         log.Write("RESERVE " + r.Number + " " + plate);
         return r;
+    }
+
+    // Перевірка клієнта й авто (спільна для Reserve і Quote).
+    // true - відмова: текст помилки в lastError і на консолі.
+    private bool DriverRejected(int customerId, string plate, out Customer cust, out Car car)
+    {
+        cust = repo.FindCustomer(customerId);
+        car = repo.FindCar(plate);
+        string err = null;
+        if (cust == null || car == null)
+            err = "Customer " + customerId + " or car " + plate + " not found";
+        else if (cust.DriverAge < MinDriverAge || cust.LicenseYears < MinLicenseYears
+            || (cust.DriverAge < PremiumMinDriverAge && car.CarClass == "PREMIUM"))
+            err = "Customer " + customerId + " may not drive " + car.CarClass;
+        if (err == null)
+            return false;
+        lastError = err;
+        Console.WriteLine("  ! " + err);
+        return true;
     }
 
     public bool Pickup(string rentalNo, int km, int fuelPercent)
@@ -117,20 +124,8 @@ public class RentService
     // Попередня ціна - така ж, як при закритті. -1 = помилка
     public double Quote(int customerId, string plate, int days, int estKm)
     {
-        Customer cust = repo.FindCustomer(customerId);
-        Car car = repo.FindCar(plate);
-        string err = null;
-        if (cust == null || car == null)
-            err = "Customer " + customerId + " or car " + plate + " not found";
-        else if (cust.DriverAge < MinDriverAge || cust.LicenseYears < MinLicenseYears
-            || (cust.DriverAge < PremiumMinDriverAge && car.CarClass == "PREMIUM"))
-            err = "Customer " + customerId + " may not drive " + car.CarClass;
-        if (err != null)
-        {
-            lastError = err;
-            Console.WriteLine("  ! " + err);
+        if (DriverRejected(customerId, plate, out _, out Car car))
             return -1;
-        }
         if (days <= 0)
             return -1;
         double rate;
