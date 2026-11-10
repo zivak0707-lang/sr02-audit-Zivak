@@ -1,0 +1,39 @@
+﻿File;Class;Method;Line;LOC;CC;Nesting;Params;FanOut
+RentService.cs;RentService;DriverRejected;72;13;8;2;4;10
+RentService.cs;RentService;Extend;229;17;6;2;3;10
+InvoicePrinter.cs;InvoicePrinter;PrintSummary;43;16;6;3;1;7
+RentService.cs;RentService;Close;135;33;5;2;6;10
+RentService.cs;RentService;Reserve;45;18;5;2;5;10
+Customer.cs;Customer;LoyaltyDiscount;36;7;5;2;0;0
+RentService.cs;RentService;DamageCharge;207;5;5;2;3;10
+Customer.cs;Customer;AddPoints;24;7;4;2;1;0
+RentService.cs;RentService;FindRental;265;6;4;3;1;10
+InvoicePrinter.cs;InvoicePrinter;InsuranceName;31;5;4;2;1;7
+Program.cs;Program;ShowReservations;34;18;3;2;1;4
+RentService.cs;RentService;Pickup;89;13;3;2;3;10
+RentService.cs;RentService;Cancel;106;8;3;2;1;10
+RentService.cs;RentService;Quote;121;7;3;2;4;10
+RentService.cs;RentService;LateFee;197;6;3;2;2;10
+InvoicePrinter.cs;InvoicePrinter;PrintFleet;8;4;3;2;1;7
+RentService.cs;RentService;GetInsuranceRate;278;4;3;2;1;10
+RentalRepository.cs;RentalRepository;FindCar;47;4;3;3;1;4
+RentalRepository.cs;RentalRepository;FindCustomer;55;4;3;3;1;4
+RentalTariff.cs;RentalTariff;DailyRate;22;3;3;2;1;0
+RentService.cs;RentService;IsSummerSurcharge;254;1;3;1;2;10
+RentService.cs;RentService;CanBeRented;259;1;3;1;2;10
+InvoicePrinter.cs;InvoicePrinter;PrintReceipt;16;11;2;2;2;7
+RentService.cs;RentService;FuelCharge;185;5;2;2;2;10
+AuditLog.cs;AuditLog;Write;8;4;2;2;1;1
+RentService.cs;RentService;BilledDays;176;4;2;2;2;10
+RentalTariff.cs;RentalTariff;RentCost;30;4;2;2;4;0
+RentalTariff.cs;RentalTariff;ExtraKmCost;39;2;2;1;2;0
+Car.cs;Car;IsBigCar;24;1;2;1;0;0
+Program.cs;Program;Main;6;24;1;1;1;4
+RentalRepository.cs;RentalRepository;RentalRepository (ctor);11;15;1;1;0;4
+RentalRepository.cs;RentalRepository;AddDemo;30;12;1;1;6;4
+RentService.cs;RentService;CompleteRental;217;7;1;1;4;10
+Car.cs;Car;Car (ctor);14;5;1;1;5;0
+Customer.cs;Customer;Customer (ctor);14;5;1;1;5;0
+RentService.cs;RentService;RentService (ctor);33;1;1;1;0;10
+RentService.cs;RentService;Now;39;1;1;1;0;10
+Rental.cs;Rental;Describe;22;1;1;1;0;3
