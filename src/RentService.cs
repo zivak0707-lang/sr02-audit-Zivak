@@ -4,12 +4,14 @@ namespace CarRental;
 // Тарифи/добу: ECONOMY 32, COMPACT 41, SUV 68, PREMIUM 95
 public class RentService
 {
-    public RentalRepository repo;
     private InvoicePrinter printer = new InvoicePrinter();
     private AuditLog log = new AuditLog();
-    public string lastError = "";
-    public int lastLateHours;     // for the return screen
-    public double lastDiscount;   // for the return screen
+
+    // Назовні - лише читання; змінює їх тільки сам сервіс.
+    public RentalRepository repo { get; private set; }
+    public string lastError { get; private set; } = "";
+    public int lastLateHours { get; private set; }     // for the return screen
+    public double lastDiscount { get; private set; }   // for the return screen
 
     private const int MinDriverAge = 21;
     private const int MinLicenseYears = 2;
