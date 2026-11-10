@@ -42,19 +42,21 @@ public class InvoicePrinter
     public void PrintSummary(List<Rental> rentals)
     {
         Console.WriteLine("-- Day summary --");
+        foreach (Rental r in rentals)
+            Console.WriteLine("  " + r.Describe() + "  " + r.Total.ToString("F2"));
         int open = 0, closed = 0, cancelled = 0;
-        double sum = 0;
         foreach (Rental r in rentals)
         {
-            Console.WriteLine("  " + r.Describe() + "  " + r.Total.ToString("F2"));
             if (r.Status == RentalStatus.Closed)
                 closed++;
             else if (r.Status == RentalStatus.Cancelled)
                 cancelled++;
             else
                 open++;
-            sum = sum + r.Total; // у незакритих Total = 0
         }
+        double sum = 0;
+        foreach (Rental r in rentals)
+            sum = sum + r.Total; // у незакритих Total = 0
         Console.WriteLine("Open: " + open + ", closed: " + closed + ", cancelled: " + cancelled);
         Console.WriteLine("Revenue: " + sum.ToString("F2") + " " + Settings.Currency);
     }
