@@ -129,9 +129,8 @@ public class RentService
             return -1;
         if (days <= 0)
             return -1;
-        double rate = DailyRate(car.CarClass);
         // Quote дає тижневу знижку лише з 8-ї доби (зафіксовано тестом)
-        double cost = RentCost(days, estKm, rate, WeeklyDiscountFromDays + 1);
+        double cost = RentCost(days, estKm, DailyRate(car.CarClass), WeeklyDiscountFromDays + 1);
         return Math.Round(cost, 2);
     }
 
@@ -156,8 +155,7 @@ public class RentService
         if (days < 1)
             days = 1; // повернули в той же день = 1 доба
         int km = returnKm - r.StartKm;
-        double rate = DailyRate(car.CarClass);
-        double cost = RentCost(days, km, rate, WeeklyDiscountFromDays);
+        double cost = RentCost(days, km, DailyRate(car.CarClass), WeeklyDiscountFromDays);
         // літо (червень-серпень): великі машини +15%
         if (car.IsBigCar() && now.Month >= SummerFirstMonth && now.Month <= SummerLastMonth)
             cost = cost * SummerSurchargeFactor;
@@ -170,7 +168,7 @@ public class RentService
         int lateHours = (int)(now - r.PlannedReturn).TotalHours;
         double late = 0;
         if (lateHours > HourlyLateHours)
-            late = (lateHours / HoursPerDay + 1) * rate;
+            late = (lateHours / HoursPerDay + 1) * DailyRate(car.CarClass);
         else if (lateHours > FreeLateHours)
             late = lateHours * LateFeePerHour;
         lastLateHours = lateHours;
@@ -233,14 +231,17 @@ public class RentService
     // discountFromDays - з якої доби діє тижнева знижка.
     private static double RentCost(int days, int km, double rate, int discountFromDays)
     {
-        double baseCost = days * rate;
-        int overKm = km - days * IncludedKmPerDay;
-        // 250 км на добу входять у ціну, далі 0.25 за км
-        double kmCost = overKm > 0 ? overKm * ExtraKmPrice : 0;
-        double cost = baseCost + kmCost;
+        double cost = days * rate + ExtraKmCost(days, km);
         if (days >= discountFromDays)
             cost = cost * WeeklyDiscountFactor; // знижка 10% за тиждень
         return cost;
+    }
+
+    // 250 км на добу входять у ціну, далі 0.25 за км
+    private static double ExtraKmCost(int days, int km)
+    {
+        int overKm = km - days * IncludedKmPerDay;
+        return overKm > 0 ? overKm * ExtraKmPrice : 0;
     }
 
     // Тариф за добу за класом авто
