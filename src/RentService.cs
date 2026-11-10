@@ -52,7 +52,7 @@ public class RentService
     {
         if (DriverRejected(customerId, plate, out Customer cust, out Car car))
             return null;
-        if (days <= 0 || days > MaxRentalDays || !car.Available)
+        if (!CanBeRented(car, days))
         {
             lastError = "Car " + plate + " is not available for " + days + " days";
             return null;
@@ -156,8 +156,7 @@ public class RentService
             days = 1; // повернули в той же день = 1 доба
         int km = returnKm - r.StartKm;
         double cost = RentCost(days, km, DailyRate(car.CarClass), WeeklyDiscountFromDays);
-        // літо (червень-серпень): великі машини +15%
-        if (car.IsBigCar() && now.Month >= SummerFirstMonth && now.Month <= SummerLastMonth)
+        if (IsSummerSurcharge(car, now))
             cost = cost * SummerSurchargeFactor;
         // пальне: доливаємо до рівня видачі + 15 за заправку
         double fuel = 0;
@@ -244,6 +243,17 @@ public class RentService
     {
         int overKm = km - days * IncludedKmPerDay;
         return overKm > 0 ? overKm * ExtraKmPrice : 0;
+    }
+
+    // літо (червень-серпень): великі машини +15%
+    private static bool IsSummerSurcharge(Car car, DateTime moment)
+    {
+        return car.IsBigCar() && moment.Month >= SummerFirstMonth && moment.Month <= SummerLastMonth;
+    }
+
+    private static bool CanBeRented(Car car, int days)
+    {
+        return days > 0 && days <= MaxRentalDays && car.Available;
     }
 
     // Тариф за добу за класом авто
