@@ -130,13 +130,8 @@ public class RentService
         if (days <= 0)
             return -1;
         double rate = DailyRate(car.CarClass);
-        double baseCost = days * rate;
-        int overKm = estKm - days * IncludedKmPerDay;
-        // 250 км на добу входять у ціну, далі 0.25 за км
-        double kmCost = overKm > 0 ? overKm * ExtraKmPrice : 0;
-        double cost = baseCost + kmCost;
-        if (days > WeeklyDiscountFromDays)
-            cost = cost * WeeklyDiscountFactor; // знижка 10% за тиждень
+        // Quote дає тижневу знижку лише з 8-ї доби (зафіксовано тестом)
+        double cost = RentCost(days, estKm, rate, WeeklyDiscountFromDays + 1);
         return Math.Round(cost, 2);
     }
 
@@ -162,13 +157,7 @@ public class RentService
             days = 1; // повернули в той же день = 1 доба
         int km = returnKm - r.StartKm;
         double rate = DailyRate(car.CarClass);
-        double baseCost = days * rate;
-        int overKm = km - days * IncludedKmPerDay;
-        // 250 км на добу входять у ціну, далі 0.25 за км
-        double kmCost = overKm > 0 ? overKm * ExtraKmPrice : 0;
-        double cost = baseCost + kmCost;
-        if (days >= WeeklyDiscountFromDays)
-            cost = cost * WeeklyDiscountFactor; // знижка 10% за тиждень
+        double cost = RentCost(days, km, rate, WeeklyDiscountFromDays);
         // літо (червень-серпень): великі машини +15%
         if (car.IsBigCar() && now.Month >= SummerFirstMonth && now.Month <= SummerLastMonth)
             cost = cost * SummerSurchargeFactor;
@@ -233,16 +222,25 @@ public class RentService
         Car car = r.Car;
         // Extend досі рахує SUV за старим тарифом 65 (зафіксовано тестом)
         double rate = car.CarClass == "SUV" ? ExtendSuvDailyRate : DailyRate(car.CarClass);
-        double baseCost = totalDays * rate;
-        int overKm = km - totalDays * IncludedKmPerDay;
-        double kmCost = overKm > 0 ? overKm * ExtraKmPrice : 0;
-        double cost = baseCost + kmCost;
-        if (totalDays >= WeeklyDiscountFromDays)
-            cost = cost * WeeklyDiscountFactor;
+        double cost = RentCost(totalDays, km, rate, WeeklyDiscountFromDays);
         r.PlannedReturn = newReturn;
         r.Days = totalDays;
         log.Write("EXTEND " + r.Number + " +" + extraDays);
         return Math.Round(cost, 2);
+    }
+
+    // Прокат за дні й пробіг - єдина формула для Quote, Close і Extend.
+    // discountFromDays - з якої доби діє тижнева знижка.
+    private static double RentCost(int days, int km, double rate, int discountFromDays)
+    {
+        double baseCost = days * rate;
+        int overKm = km - days * IncludedKmPerDay;
+        // 250 км на добу входять у ціну, далі 0.25 за км
+        double kmCost = overKm > 0 ? overKm * ExtraKmPrice : 0;
+        double cost = baseCost + kmCost;
+        if (days >= discountFromDays)
+            cost = cost * WeeklyDiscountFactor; // знижка 10% за тиждень
+        return cost;
     }
 
     // Тариф за добу за класом авто
