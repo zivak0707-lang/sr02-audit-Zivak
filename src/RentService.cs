@@ -11,6 +11,27 @@ public class RentService
     public int lastLateHours;     // for the return screen
     public double lastDiscount;   // for the return screen
 
+    private const int MinDriverAge = 21;
+    private const int MinLicenseYears = 2;
+    private const int PremiumMinDriverAge = 25;
+    private const int MaxRentalDays = 30;
+    private const double BigCarDeposit = 500;
+    private const double StandardDeposit = 300;
+    private const int IncludedKmPerDay = 250;
+    private const double ExtraKmPrice = 0.25;
+    private const int WeeklyDiscountFromDays = 7;
+    private const double WeeklyDiscountFactor = 0.9;
+    private const double SummerSurchargeFactor = 1.15;
+    private const int SummerFirstMonth = 6;
+    private const int SummerLastMonth = 8;
+    private const double FullTankPercent = 100.0;
+    private const double RefuelFee = 15;
+    private const int FreeLateHours = 1;
+    private const int HourlyLateHours = 3;
+    private const int LateFeePerHour = 12;
+    private const int HoursPerDay = 24;
+    private const double BasicInsuranceExcess = 300;
+
     public RentService()
     {
         repo = new RentalRepository();
@@ -31,8 +52,8 @@ public class RentService
         string err = null;
         if (cust == null || car == null)
             err = "Customer " + customerId + " or car " + plate + " not found";
-        else if (cust.DriverAge < 21 || cust.LicenseYears < 2
-            || (cust.DriverAge < 25 && car.CarClass == "PREMIUM"))
+        else if (cust.DriverAge < MinDriverAge || cust.LicenseYears < MinLicenseYears
+            || (cust.DriverAge < PremiumMinDriverAge && car.CarClass == "PREMIUM"))
             err = "Customer " + customerId + " may not drive " + car.CarClass;
         if (err != null)
         {
@@ -40,7 +61,7 @@ public class RentService
             Console.WriteLine("  ! " + err);
             return null;
         }
-        if (days <= 0 || days > 30 || !car.Available)
+        if (days <= 0 || days > MaxRentalDays || !car.Available)
         {
             lastError = "Car " + plate + " is not available for " + days + " days";
             return null;
@@ -53,7 +74,7 @@ public class RentService
         r.StartDate = Now().Date.AddDays(startInDays);
         r.PlannedReturn = r.StartDate.AddDays(days);
         r.Insurance = insurance == null ? "NONE" : insurance.ToUpper();
-        r.Deposit = car.IsBigCar() ? 500 : 300;
+        r.Deposit = car.IsBigCar() ? BigCarDeposit : StandardDeposit;
         car.Available = false;   // reserved car is blocked for others
         repo.Rentals.Add(r);
         log.Write("RESERVE " + r.Number + " " + plate);
@@ -99,8 +120,8 @@ public class RentService
         string err = null;
         if (cust == null || car == null)
             err = "Customer " + customerId + " or car " + plate + " not found";
-        else if (cust.DriverAge < 21 || cust.LicenseYears < 2
-            || (cust.DriverAge < 25 && car.CarClass == "PREMIUM"))
+        else if (cust.DriverAge < MinDriverAge || cust.LicenseYears < MinLicenseYears
+            || (cust.DriverAge < PremiumMinDriverAge && car.CarClass == "PREMIUM"))
             err = "Customer " + customerId + " may not drive " + car.CarClass;
         if (err != null)
         {
@@ -120,12 +141,12 @@ public class RentService
             default: rate = 32; break;
         }
         double baseCost = days * rate;
-        int overKm = estKm - days * 250;
+        int overKm = estKm - days * IncludedKmPerDay;
         // 250 км на добу входять у ціну, далі 0.25 за км
-        double kmCost = overKm > 0 ? overKm * 0.25 : 0;
+        double kmCost = overKm > 0 ? overKm * ExtraKmPrice : 0;
         double cost = baseCost + kmCost;
-        if (days > 7)
-            cost = cost * 0.9; // знижка 10% за тиждень
+        if (days > WeeklyDiscountFromDays)
+            cost = cost * WeeklyDiscountFactor; // знижка 10% за тиждень
         return Math.Round(cost, 2);
     }
 
@@ -160,26 +181,27 @@ public class RentService
             default: rate = 32; break;
         }
         double baseCost = days * rate;
-        int overKm = km - days * 250;
+        int overKm = km - days * IncludedKmPerDay;
         // 250 км на добу входять у ціну, далі 0.25 за км
-        double kmCost = overKm > 0 ? overKm * 0.25 : 0;
+        double kmCost = overKm > 0 ? overKm * ExtraKmPrice : 0;
         double cost = baseCost + kmCost;
-        if (days >= 7)
-            cost = cost * 0.9; // знижка 10% за тиждень
+        if (days >= WeeklyDiscountFromDays)
+            cost = cost * WeeklyDiscountFactor; // знижка 10% за тиждень
         // літо (червень-серпень): великі машини +15%
-        if (car.IsBigCar() && now.Month >= 6 && now.Month <= 8)
-            cost = cost * 1.15;
+        if (car.IsBigCar() && now.Month >= SummerFirstMonth && now.Month <= SummerLastMonth)
+            cost = cost * SummerSurchargeFactor;
         // пальне: доливаємо до рівня видачі + 15 за заправку
         double fuel = 0;
         if (fuelPercent < r.StartFuel)
-            fuel = (r.StartFuel - fuelPercent) * car.TankLiters / 100.0 * Settings.FuelPrice + 15;
+            fuel = (r.StartFuel - fuelPercent) * car.TankLiters / FullTankPercent * Settings.FuelPrice
+                + RefuelFee;
         // late: first hour free, up to 3 h - 12 per hour, then a day per started 24 h
         int lateHours = (int)(now - r.PlannedReturn).TotalHours;
         double late = 0;
-        if (lateHours > 3)
-            late = (lateHours / 24 + 1) * rate;
-        else if (lateHours > 1)
-            late = lateHours * 12;
+        if (lateHours > HourlyLateHours)
+            late = (lateHours / HoursPerDay + 1) * rate;
+        else if (lateHours > FreeLateHours)
+            late = lateHours * LateFeePerHour;
         lastLateHours = lateHours;
         double dmg = 0;
         if (damaged)
@@ -188,8 +210,8 @@ public class RentService
             {
                 dmg = damageCost;
                 if (r.Insurance == "BASIC")
-                    if (dmg > 300)
-                        dmg = 300; // франшиза базової страховки
+                    if (dmg > BasicInsuranceExcess)
+                        dmg = BasicInsuranceExcess; // франшиза базової страховки
             }
         }
         double ins = days * GetInsuranceRate(r.Insurance);
@@ -223,7 +245,7 @@ public class RentService
         }
         DateTime newReturn = r.PlannedReturn.AddDays(extraDays);
         int totalDays = (newReturn.Date - r.StartDate.Date).Days;
-        if (totalDays > 30)
+        if (totalDays > MaxRentalDays)
             return 0; // більше 30 днів - тільки через офіс
         int km = kmSoFar - r.StartKm;
         Car car = r.Car;
@@ -237,11 +259,11 @@ public class RentService
             default: rate = 32; break;
         }
         double baseCost = totalDays * rate;
-        int overKm = km - totalDays * 250;
-        double kmCost = overKm > 0 ? overKm * 0.25 : 0;
+        int overKm = km - totalDays * IncludedKmPerDay;
+        double kmCost = overKm > 0 ? overKm * ExtraKmPrice : 0;
         double cost = baseCost + kmCost;
-        if (totalDays >= 7)
-            cost = cost * 0.9;
+        if (totalDays >= WeeklyDiscountFromDays)
+            cost = cost * WeeklyDiscountFactor;
         r.PlannedReturn = newReturn;
         r.Days = totalDays;
         log.Write("EXTEND " + r.Number + " +" + extraDays);
