@@ -33,6 +33,7 @@ public class RentService
     private const int LateFeePerHour = 12;
     private const int HoursPerDay = 24;
     private const double BasicInsuranceExcess = 300;
+    private const double ExtendSuvDailyRate = 65;
 
     public RentService()
     {
@@ -128,15 +129,7 @@ public class RentService
             return -1;
         if (days <= 0)
             return -1;
-        double rate;
-        switch (car.CarClass)
-        {
-            case "ECONOMY": rate = 32; break;
-            case "COMPACT": rate = 41; break;
-            case "SUV": rate = 68; break;
-            case "PREMIUM": rate = 95; break;
-            default: rate = 32; break;
-        }
+        double rate = DailyRate(car.CarClass);
         double baseCost = days * rate;
         int overKm = estKm - days * IncludedKmPerDay;
         // 250 км на добу входять у ціну, далі 0.25 за км
@@ -168,15 +161,7 @@ public class RentService
         if (days < 1)
             days = 1; // повернули в той же день = 1 доба
         int km = returnKm - r.StartKm;
-        double rate;
-        switch (car.CarClass)
-        {
-            case "ECONOMY": rate = 32; break;
-            case "COMPACT": rate = 41; break;
-            case "SUV": rate = 68; break;
-            case "PREMIUM": rate = 95; break;
-            default: rate = 32; break;
-        }
+        double rate = DailyRate(car.CarClass);
         double baseCost = days * rate;
         int overKm = km - days * IncludedKmPerDay;
         // 250 км на добу входять у ціну, далі 0.25 за км
@@ -246,15 +231,8 @@ public class RentService
             return 0; // більше 30 днів - тільки через офіс
         int km = kmSoFar - r.StartKm;
         Car car = r.Car;
-        double rate;
-        switch (car.CarClass)
-        {
-            case "ECONOMY": rate = 32; break;
-            case "COMPACT": rate = 41; break;
-            case "SUV": rate = 65; break;
-            case "PREMIUM": rate = 95; break;
-            default: rate = 32; break;
-        }
+        // Extend досі рахує SUV за старим тарифом 65 (зафіксовано тестом)
+        double rate = car.CarClass == "SUV" ? ExtendSuvDailyRate : DailyRate(car.CarClass);
         double baseCost = totalDays * rate;
         int overKm = km - totalDays * IncludedKmPerDay;
         double kmCost = overKm > 0 ? overKm * ExtraKmPrice : 0;
@@ -265,6 +243,19 @@ public class RentService
         r.Days = totalDays;
         log.Write("EXTEND " + r.Number + " +" + extraDays);
         return Math.Round(cost, 2);
+    }
+
+    // Тариф за добу за класом авто
+    private static double DailyRate(string carClass)
+    {
+        switch (carClass)
+        {
+            case "ECONOMY": return 32;
+            case "COMPACT": return 41;
+            case "SUV": return 68;
+            case "PREMIUM": return 95;
+            default: return 32;
+        }
     }
 
     // TEMP: з планшета номер приходить малими літерами
