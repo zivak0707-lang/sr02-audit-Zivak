@@ -162,8 +162,10 @@ public class RentService
         // пальне: доливаємо до рівня видачі + 15 за заправку
         double fuel = 0;
         if (fuelPercent < r.StartFuel)
-            fuel = (r.StartFuel - fuelPercent) * car.TankLiters / FullTankPercent * Settings.FuelPrice
-                + RefuelFee;
+        {
+            double litersToRefill = (r.StartFuel - fuelPercent) * car.TankLiters / FullTankPercent;
+            fuel = litersToRefill * Settings.FuelPrice + RefuelFee;
+        }
         // late: first hour free, up to 3 h - 12 per hour, then a day per started 24 h
         int lateHours = (int)(now - r.PlannedReturn).TotalHours;
         double late = 0;
