@@ -18,10 +18,6 @@ public class RentService
     private const int MaxRentalDays = 30;
     private const double BigCarDeposit = 500;
     private const double StandardDeposit = 300;
-    private const int IncludedKmPerDay = 250;
-    private const double ExtraKmPrice = 0.25;
-    private const int WeeklyDiscountFromDays = 7;
-    private const double WeeklyDiscountFactor = 0.9;
     private const double SummerSurchargeFactor = 1.15;
     private const int SummerFirstMonth = 6;
     private const int SummerLastMonth = 8;
@@ -33,15 +29,6 @@ public class RentService
     private const int HoursPerDay = 24;
     private const double BasicInsuranceExcess = 300;
     private const double ExtendSuvDailyRate = 65;
-    private const double DefaultDailyRate = 32;
-
-    private static readonly Dictionary<string, double> DailyRates = new()
-    {
-        ["ECONOMY"] = 32,
-        ["COMPACT"] = 41,
-        ["SUV"] = 68,
-        ["PREMIUM"] = 95,
-    };
 
     public RentService()
     {
@@ -138,7 +125,8 @@ public class RentService
         if (days <= 0)
             return -1;
         // Quote дає тижневу знижку лише з 8-ї доби (зафіксовано тестом)
-        double cost = RentCost(days, estKm, DailyRate(car.CarClass), WeeklyDiscountFromDays + 1);
+        double cost = RentalTariff.RentCost(days, estKm, RentalTariff.DailyRate(car.CarClass),
+            RentalTariff.WeeklyDiscountFromDays + 1);
         return Math.Round(cost, 2);
     }
 
@@ -161,12 +149,13 @@ public class RentService
         DateTime now = Now();
         int days = BilledDays(r.StartDate, now);
         int km = returnKm - r.StartKm;
-        double cost = RentCost(days, km, DailyRate(car.CarClass), WeeklyDiscountFromDays);
+        double cost = RentalTariff.RentCost(days, km, RentalTariff.DailyRate(car.CarClass),
+            RentalTariff.WeeklyDiscountFromDays);
         if (IsSummerSurcharge(car, now))
             cost = cost * SummerSurchargeFactor;
         double fuel = FuelCharge(r, fuelPercent);
         int lateHours = (int)(now - r.PlannedReturn).TotalHours;
-        double late = LateFee(lateHours, DailyRate(car.CarClass));
+        double late = LateFee(lateHours, RentalTariff.DailyRate(car.CarClass));
         lastLateHours = lateHours;
         double dmg = DamageCharge(damaged, damageCost, r.Insurance);
         double ins = days * GetInsuranceRate(r.Insurance);
@@ -252,29 +241,13 @@ public class RentService
         int km = kmSoFar - r.StartKm;
         Car car = r.Car;
         // Extend досі рахує SUV за старим тарифом 65 (зафіксовано тестом)
-        double rate = car.CarClass == "SUV" ? ExtendSuvDailyRate : DailyRate(car.CarClass);
-        double cost = RentCost(totalDays, km, rate, WeeklyDiscountFromDays);
+        double rate = car.CarClass == "SUV"
+            ? ExtendSuvDailyRate : RentalTariff.DailyRate(car.CarClass);
+        double cost = RentalTariff.RentCost(totalDays, km, rate, RentalTariff.WeeklyDiscountFromDays);
         r.PlannedReturn = newReturn;
         r.Days = totalDays;
         log.Write("EXTEND " + r.Number + " +" + extraDays);
         return Math.Round(cost, 2);
-    }
-
-    // Прокат за дні й пробіг - єдина формула для Quote, Close і Extend.
-    // discountFromDays - з якої доби діє тижнева знижка.
-    private static double RentCost(int days, int km, double rate, int discountFromDays)
-    {
-        double cost = days * rate + ExtraKmCost(days, km);
-        if (days >= discountFromDays)
-            cost = cost * WeeklyDiscountFactor; // знижка 10% за тиждень
-        return cost;
-    }
-
-    // 250 км на добу входять у ціну, далі 0.25 за км
-    private static double ExtraKmCost(int days, int km)
-    {
-        int overKm = km - days * IncludedKmPerDay;
-        return overKm > 0 ? overKm * ExtraKmPrice : 0;
     }
 
     // літо (червень-серпень): великі машини +15%
@@ -286,14 +259,6 @@ public class RentService
     private static bool CanBeRented(Car car, int days)
     {
         return days > 0 && days <= MaxRentalDays && car.Available;
-    }
-
-    // Тариф за добу за класом авто; невідомий клас - як ECONOMY
-    private static double DailyRate(string carClass)
-    {
-        if (carClass != null && DailyRates.TryGetValue(carClass, out double rate))
-            return rate;
-        return DefaultDailyRate;
     }
 
     // TEMP: з планшета номер приходить малими літерами
