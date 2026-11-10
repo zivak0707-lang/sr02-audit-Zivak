@@ -209,18 +209,11 @@ public class RentService
 
     private static double DamageCharge(bool damaged, double damageCost, string insurance)
     {
-        double dmg = 0;
-        if (damaged)
-        {
-            if (insurance != "FULL")
-            {
-                dmg = damageCost;
-                if (insurance == "BASIC")
-                    if (dmg > BasicInsuranceExcess)
-                        dmg = BasicInsuranceExcess; // франшиза базової страховки
-            }
-        }
-        return dmg;
+        if (!damaged || insurance == "FULL")
+            return 0;
+        if (insurance == "BASIC" && damageCost > BasicInsuranceExcess)
+            return BasicInsuranceExcess; // франшиза базової страховки
+        return damageCost;
     }
 
     // Стан після повернення: оренда закрита, авто й клієнт оновлені.
