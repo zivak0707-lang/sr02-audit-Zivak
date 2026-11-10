@@ -1,7 +1,6 @@
 namespace CarRental;
 
 // Сервіс філії: бронювання, видача, повернення авто.
-// Тарифи/добу: ECONOMY 32, COMPACT 41, SUV 68, PREMIUM 95
 public class RentService
 {
     private InvoicePrinter printer = new InvoicePrinter();
@@ -34,6 +33,15 @@ public class RentService
     private const int HoursPerDay = 24;
     private const double BasicInsuranceExcess = 300;
     private const double ExtendSuvDailyRate = 65;
+    private const double DefaultDailyRate = 32;
+
+    private static readonly Dictionary<string, double> DailyRates = new()
+    {
+        ["ECONOMY"] = 32,
+        ["COMPACT"] = 41,
+        ["SUV"] = 68,
+        ["PREMIUM"] = 95,
+    };
 
     public RentService()
     {
@@ -280,17 +288,12 @@ public class RentService
         return days > 0 && days <= MaxRentalDays && car.Available;
     }
 
-    // Тариф за добу за класом авто
+    // Тариф за добу за класом авто; невідомий клас - як ECONOMY
     private static double DailyRate(string carClass)
     {
-        switch (carClass)
-        {
-            case "ECONOMY": return 32;
-            case "COMPACT": return 41;
-            case "SUV": return 68;
-            case "PREMIUM": return 95;
-            default: return 32;
-        }
+        if (carClass != null && DailyRates.TryGetValue(carClass, out double rate))
+            return rate;
+        return DefaultDailyRate;
     }
 
     // TEMP: з планшета номер приходить малими літерами
