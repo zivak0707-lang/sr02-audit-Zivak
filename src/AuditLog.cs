@@ -12,6 +12,7 @@ public class AuditLog
             File.AppendAllText(Settings.AuditFile, DateTime.Now.ToString("s") + " " + msg + "\n");
             Written++;
         }
+        // TODO TD-08: порожній catch ховає збій журналу; логувати помилку
         catch (Exception) { }
     }
 }

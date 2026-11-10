@@ -5,6 +5,7 @@ public class Car
 {
     public string Plate;
     public string Model;
+    // TODO TD-07: рядок замість типу домену; R12 Replace Primitive with Value Object
     public string CarClass;      // ECONOMY, COMPACT, SUV, PREMIUM
     public int TankLiters;
     public int Mileage;

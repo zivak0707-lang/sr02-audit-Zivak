@@ -1,6 +1,7 @@
 namespace CarRental;
 
 // Сервіс філії: бронювання, видача, повернення авто.
+// TODO TD-09: Fan-out 10 і поля last*; виділити ReturnDesk (наст. семестр)
 public class RentService
 {
     private InvoicePrinter printer = new InvoicePrinter();
@@ -97,6 +98,7 @@ public class RentService
         r.StartKm = km;
         r.StartFuel = fuelPercent;
         r.StartDate = Now().Date;
+        // TODO TD-04: повернення о 00:00 - вчасне повернення вдень штрафується
         r.PlannedReturn = Now().Date.AddDays(r.Days);
         r.Status = RentalStatus.Active;
         log.Write("PICKUP " + r.Number + " km=" + km);
@@ -124,7 +126,8 @@ public class RentService
             return -1;
         if (days <= 0)
             return -1;
-        // Quote дає тижневу знижку лише з 8-ї доби (зафіксовано тестом)
+        // TODO TD-02: Quote дає тижневу знижку з 8-ї доби, Close - з 7-ї;
+        // виправити окремим fix до 20.11.2026
         double cost = RentalTariff.RentCost(days, estKm, RentalTariff.DailyRate(car.CarClass),
             RentalTariff.WeeklyDiscountFromDays + 1);
         return Math.Round(cost, 2);
@@ -132,6 +135,8 @@ public class RentService
 
     // Закриття оренди при поверненні авто.
     // Повертає суму до сплати або 0, якщо не знайдено.
+    // TODO TD-06: насправді повертає -1; замінити коди помилок винятком
+    // TODO TD-03: 6 параметрів і два прапорці; ввести ReturnRequest
     public double Close(string rentalNo, int returnKm, int fuelPercent, bool damaged,
         double damageCost, bool printReceipt)
     {
@@ -194,6 +199,7 @@ public class RentService
     }
 
     // late: first hour free, up to 3 h - 12 per hour, then a day per started 24 h
+    // TODO TD-05: штраф не монотонний (3 год = 36, 4 год = 32); узгодити правило
     private static double LateFee(int lateHours, double dailyRate)
     {
         double late = 0;
@@ -240,7 +246,8 @@ public class RentService
             return 0; // більше 30 днів - тільки через офіс
         int km = kmSoFar - r.StartKm;
         Car car = r.Car;
-        // Extend досі рахує SUV за старим тарифом 65 (зафіксовано тестом)
+        // TODO TD-01: Extend рахує SUV за 65, Quote і Close - за 68;
+        // виправити окремим fix до 20.11.2026
         double rate = car.CarClass == "SUV"
             ? ExtendSuvDailyRate : RentalTariff.DailyRate(car.CarClass);
         double cost = RentalTariff.RentCost(totalDays, km, rate, RentalTariff.WeeklyDiscountFromDays);
