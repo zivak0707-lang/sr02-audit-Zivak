@@ -197,7 +197,6 @@ public class RentService
         lastDiscount = disc;
         cost = cost - cost * disc;
         double total = Math.Round(cost + fuel + late + dmg + ins, 2);
-        //total = total * 1.2; // ПДВ, вимкнено з 2023
         r.EndKm = returnKm;
         r.Days = days;
         r.Total = total;
@@ -245,7 +244,6 @@ public class RentService
             cost = cost * 0.9;
         r.PlannedReturn = newReturn;
         r.Days = totalDays;
-        // r.Deposit = r.Deposit + extraDays * 50;  фінвідділ проти
         log.Write("EXTEND " + r.Number + " +" + extraDays);
         return Math.Round(cost, 2);
     }
@@ -284,17 +282,5 @@ public class RentService
         if (c.RentalsCount >= 3 && c.Points > 100)
             return 0.02; // "welcome back" від маркетингу
         return 0;
-    }
-
-    // старий тариф (до 2022) - для старих договорів
-    private double CalcOldTariff(int days, string cls)
-    {
-        double r = 30;
-        if (cls == "SUV" || cls == "PREMIUM")
-            r = 60;
-        double sum = days * r;
-        if (days > 10)
-            sum = sum * 0.85;
-        return sum;
     }
 }
