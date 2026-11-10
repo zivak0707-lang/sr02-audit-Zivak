@@ -151,57 +151,88 @@ public class RentService
         Car car = r.Car;
         Customer c = r.Customer;
         DateTime now = Now();
-        int days = (now.Date - r.StartDate.Date).Days;
-        if (days < 1)
-            days = 1; // повернули в той же день = 1 доба
+        int days = BilledDays(r.StartDate, now);
         int km = returnKm - r.StartKm;
         double cost = RentCost(days, km, DailyRate(car.CarClass), WeeklyDiscountFromDays);
         if (IsSummerSurcharge(car, now))
             cost = cost * SummerSurchargeFactor;
-        // пальне: доливаємо до рівня видачі + 15 за заправку
-        double fuel = 0;
-        if (fuelPercent < r.StartFuel)
-        {
-            double litersToRefill = (r.StartFuel - fuelPercent) * car.TankLiters / FullTankPercent;
-            fuel = litersToRefill * Settings.FuelPrice + RefuelFee;
-        }
-        // late: first hour free, up to 3 h - 12 per hour, then a day per started 24 h
+        double fuel = FuelCharge(r, fuelPercent);
         int lateHours = (int)(now - r.PlannedReturn).TotalHours;
-        double late = 0;
-        if (lateHours > HourlyLateHours)
-            late = (lateHours / HoursPerDay + 1) * DailyRate(car.CarClass);
-        else if (lateHours > FreeLateHours)
-            late = lateHours * LateFeePerHour;
+        double late = LateFee(lateHours, DailyRate(car.CarClass));
         lastLateHours = lateHours;
-        double dmg = 0;
-        if (damaged)
-        {
-            if (r.Insurance != "FULL")
-            {
-                dmg = damageCost;
-                if (r.Insurance == "BASIC")
-                    if (dmg > BasicInsuranceExcess)
-                        dmg = BasicInsuranceExcess; // франшиза базової страховки
-            }
-        }
+        double dmg = DamageCharge(damaged, damageCost, r.Insurance);
         double ins = days * GetInsuranceRate(r.Insurance);
         double disc = GetLoyaltyDiscount(c);
         lastDiscount = disc;
         cost = cost - cost * disc;
         double total = Math.Round(cost + fuel + late + dmg + ins, 2);
-        r.EndKm = returnKm;
         r.Days = days;
         r.Total = total;
-        r.Status = RentalStatus.Closed;
-        car.Mileage = returnKm;
-        car.FuelPercent = fuelPercent;
-        car.Available = !damaged; // пошкоджене авто - на СТО
-        c.RentalsCount++;
-        c.AddPoints((int)(total / 10));
+        CompleteRental(r, returnKm, fuelPercent, damaged);
         log.Write("CLOSE " + r.Number + " total=" + total);
         if (printReceipt)
             printer.PrintReceipt(r, cost, fuel, late, dmg, ins);
         return total;
+    }
+
+    // повернули в той же день = 1 доба
+    private static int BilledDays(DateTime startDate, DateTime moment)
+    {
+        int days = (moment.Date - startDate.Date).Days;
+        if (days < 1)
+            days = 1;
+        return days;
+    }
+
+    // пальне: доливаємо до рівня видачі + 15 за заправку
+    private static double FuelCharge(Rental r, int fuelPercent)
+    {
+        double fuel = 0;
+        if (fuelPercent < r.StartFuel)
+        {
+            double litersToRefill = (r.StartFuel - fuelPercent) * r.Car.TankLiters / FullTankPercent;
+            fuel = litersToRefill * Settings.FuelPrice + RefuelFee;
+        }
+        return fuel;
+    }
+
+    // late: first hour free, up to 3 h - 12 per hour, then a day per started 24 h
+    private static double LateFee(int lateHours, double dailyRate)
+    {
+        double late = 0;
+        if (lateHours > HourlyLateHours)
+            late = (lateHours / HoursPerDay + 1) * dailyRate;
+        else if (lateHours > FreeLateHours)
+            late = lateHours * LateFeePerHour;
+        return late;
+    }
+
+    private static double DamageCharge(bool damaged, double damageCost, string insurance)
+    {
+        double dmg = 0;
+        if (damaged)
+        {
+            if (insurance != "FULL")
+            {
+                dmg = damageCost;
+                if (insurance == "BASIC")
+                    if (dmg > BasicInsuranceExcess)
+                        dmg = BasicInsuranceExcess; // франшиза базової страховки
+            }
+        }
+        return dmg;
+    }
+
+    // Стан після повернення: оренда закрита, авто й клієнт оновлені.
+    private static void CompleteRental(Rental r, int returnKm, int fuelPercent, bool damaged)
+    {
+        r.EndKm = returnKm;
+        r.Status = RentalStatus.Closed;
+        r.Car.Mileage = returnKm;
+        r.Car.FuelPercent = fuelPercent;
+        r.Car.Available = !damaged; // пошкоджене авто - на СТО
+        r.Customer.RentalsCount++;
+        r.Customer.AddPoints((int)(r.Total / 10));
     }
 
     // Продовження: нова вартість прокату за весь період
