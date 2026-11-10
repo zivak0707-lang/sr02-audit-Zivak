@@ -21,13 +21,13 @@ public class InvoicePrinter
         Console.WriteLine("  Rent: " + rent.ToString("F2") + "  Fuel: " + fuel.ToString("F2")
             + "  Late: " + late.ToString("F2"));
         Console.WriteLine("  Damage: " + damage.ToString("F2") + "  Insurance: "
-            + insurance.ToString("F2") + " (" + insuranceName(r.Insurance) + ")");
+            + insurance.ToString("F2") + " (" + InsuranceName(r.Insurance) + ")");
         if (Settings.PrintVat)
             Console.WriteLine("  incl. VAT: " + (r.Total / 6).ToString("F2"));
         Console.WriteLine("  TOTAL: " + r.Total.ToString("F2") + " " + Settings.Currency);
     }
 
-    public string insuranceName(string code)
+    public string InsuranceName(string code)
     {
         switch (code)
         {

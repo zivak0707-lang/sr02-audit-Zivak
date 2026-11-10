@@ -26,7 +26,7 @@ public class Program
         Console.WriteLine("R-1005 same-day return, total " + t.ToString("F2"));
         t = svc.Close("R-2001", 1000, 100, false, 0, false);
         Console.WriteLine("R-2001: " + t + " (" + svc.lastError + ")");
-        Customer olena = svc.repo.find_customer(2);
+        Customer olena = svc.repo.FindCustomer(2);
         Console.WriteLine(olena.Name + ": " + olena.Points + " points, level " + olena.Level);
         printer.PrintSummary(svc.repo.Rentals);
     }

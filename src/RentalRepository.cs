@@ -32,7 +32,7 @@ public class RentalRepository
     {
         Rental r = new Rental();
         r.Number = no;
-        r.Customer = find_customer(customerId);
+        r.Customer = FindCustomer(customerId);
         r.Car = car;
         r.Status = RentalStatus.Active;
         r.StartDate = DateTime.Today.AddDays(-daysAgo);
@@ -52,7 +52,7 @@ public class RentalRepository
         return null;
     }
 
-    public Customer find_customer(int id)
+    public Customer FindCustomer(int id)
     {
         for (int i = 0; i < Customers.Count; i++)
         {

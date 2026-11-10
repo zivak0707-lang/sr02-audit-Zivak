@@ -26,7 +26,7 @@ public class RentService
     public Rental Reserve(int customerId, string plate, int startInDays, int days,
         string insurance)
     {
-        Customer cust = repo.find_customer(customerId);
+        Customer cust = repo.FindCustomer(customerId);
         Car car = repo.FindCar(plate);
         string err = null;
         if (cust == null || car == null)
@@ -94,7 +94,7 @@ public class RentService
     // Попередня ціна - така ж, як при закритті. -1 = помилка
     public double Quote(int customerId, string plate, int days, int estKm)
     {
-        Customer cust = repo.find_customer(customerId);
+        Customer cust = repo.FindCustomer(customerId);
         Car car = repo.FindCar(plate);
         string err = null;
         if (cust == null || car == null)
