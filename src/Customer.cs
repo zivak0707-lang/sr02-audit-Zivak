@@ -31,4 +31,16 @@ public class Customer
         else if (Points >= 400)
             Level = "SILVER"; // TODO: пониження рівня?
     }
+
+    // знижка лояльності - тільки на прокат, не на пальне
+    public double LoyaltyDiscount()
+    {
+        if (Level == "GOLD")
+            return 0.10;
+        if (Level == "SILVER")
+            return 0.05;
+        if (RentalsCount >= 3 && Points > 100)
+            return 0.02; // "welcome back" від маркетингу
+        return 0;
+    }
 }

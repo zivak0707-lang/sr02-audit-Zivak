@@ -170,7 +170,7 @@ public class RentService
         lastLateHours = lateHours;
         double dmg = DamageCharge(damaged, damageCost, r.Insurance);
         double ins = days * GetInsuranceRate(r.Insurance);
-        double disc = GetLoyaltyDiscount(c);
+        double disc = c.LoyaltyDiscount();
         lastDiscount = disc;
         cost = cost - cost * disc;
         double total = Math.Round(cost + fuel + late + dmg + ins, 2);
@@ -318,17 +318,5 @@ public class RentService
             case "FULL": return 19;
             default: return 0;
         }
-    }
-
-    // знижка лояльності - тільки на прокат, не на пальне
-    public double GetLoyaltyDiscount(Customer c)
-    {
-        if (c.Level == "GOLD")
-            return 0.10;
-        if (c.Level == "SILVER")
-            return 0.05;
-        if (c.RentalsCount >= 3 && c.Points > 100)
-            return 0.02; // "welcome back" від маркетингу
-        return 0;
     }
 }
